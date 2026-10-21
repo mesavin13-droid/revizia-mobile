@@ -1,0 +1,34 @@
+name: Unpack Revizia source
+on:
+  push:
+    paths:
+      - 'upload/ready.txt'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Restore project from encoded source
+        run: |
+          cat upload/[0-9][0-9].txt | base64 --decode > /tmp/revizia.tar.gz
+          echo '96e4a88a96aa26f2d8d453d7de87db34a01905505baee922d817571ff1bb655d  /tmp/revizia.tar.gz' | sha256sum -c -
+          tar xzf /tmp/revizia.tar.gz
+          rm -rf upload .github/workflows/unpack.yml
+      - name: Commit source tree
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: import complete Revizia 3.0 source' || exit 0
+          git push origin HEAD:main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
