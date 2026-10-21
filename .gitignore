@@ -1,0 +1,13 @@
+# dependencies and Vite output
+node_modules/
+dist/
+.vite/
+# Local Vercel settings and secrets
+.vercel/
+.env
+.env.*
+!.env.example
+# local files
+.DS_Store
+*.log
+coverage/
